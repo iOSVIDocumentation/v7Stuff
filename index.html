@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>V7Stuff | iOS 10.0 - 10.3.4</title>
+    <style>
+        :root {
+            --v7-blue: #007aff; /* Классический синий iOS */
+            --v7-glow: #5ac8fa; 
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, Helvetica, Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        header { margin-top: 40px; text-align: center; width: 100%; }
+        
+        h1 { 
+            font-size: 3.2em; 
+            font-weight: 800; 
+            margin: 0; 
+            letter-spacing: -1px;
+            background: linear-gradient(180deg, #fff 30%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .version-range {
+            color: var(--v7-glow);
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+        
+        #console {
+            width: 85%;
+            height: 180px;
+            background: rgba(20, 20, 20, 0.95);
+            border-radius: 14px;
+            padding: 15px;
+            font-family: "Menlo", "Courier New", monospace;
+            font-size: 11px;
+            color: #d1d1d1;
+            overflow-y: auto;
+            border: 1px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .slider-container {
+            width: 290px;
+            height: 64px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 32px;
+            position: relative;
+            margin-bottom: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px);
+        }
+
+        #slider-handle {
+            width: 58px;
+            height: 58px;
+            background: #fff;
+            border-radius: 50%;
+            position: absolute;
+            left: 3px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            z-index: 2;
+        }
+
+        .slider-text {
+            color: #999;
+            font-size: 16px;
+            font-weight: 400;
+            user-select: none;
+        }
+
+        .log-v7 { color: var(--v7-glow); font-weight: bold; }
+        .log-ok { color: #4cd964; }
+        .log-warn { color: #ffcc00; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>V7Stuff</h1>
+    <div class="version-range">iOS 10.0 — 10.3.4</div>
+    <p style="color: #666; font-size: 12px; margin-top: 10px;">Legacy 32-bit (ARMv7) Support</p>
+</header>
+
+<div id="console">
+    [v7] V7Stuff Loader v1.0.1<br>
+    [v7] Detecting device...<br>
+    [v7] Ready for ARMv7 pwnage.
+</div>
+
+<div class="slider-container" id="slider-box">
+    <div class="slider-text">slide to jailbreak</div>
+    <div id="slider-handle">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+    </div>
+</div>
+
+<script>
+    const handle = document.getElementById('slider-handle');
+    const container = document.getElementById('slider-box');
+    const consoleBox = document.getElementById('console');
+  let isDragging = false;
+    let startX = 0;
+    const maxSlide = container.offsetWidth - handle.offsetWidth - 6;
+
+    function log(msg, className = '') {
+        const line = document.createElement('div');
+        if (className) line.className = className;
+        line.innerHTML = [v7] ${msg};
+        consoleBox.appendChild(line);
+        consoleBox.scrollTop = consoleBox.scrollHeight;
+    }
+
+    handle.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        startX = e.touches[0].clientX;
+        handle.style.transition = 'none';
+    });
+
+    window.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        let x = e.touches[0].clientX - startX;
+        if (x < 0) x = 0;
+        if (x > maxSlide) x = maxSlide;
+        handle.style.left = (x + 3) + 'px';
+        container.style.background = rgba(255,255,255,${0.08 + (x/maxSlide * 0.1)});
+    });
+
+    window.addEventListener('touchend', () => {
+        if (!isDragging) return;
+        let currentX = parseInt(handle.style.left);
+        if (currentX >= maxSlide * 0.85) {
+            handle.style.left = (maxSlide + 3) + 'px';
+            container.style.visibility = 'hidden';
+            runV7();
+        } else {
+            handle.style.transition = 'left 0.3s ease-out';
+            handle.style.left = '3px';
+        }
+        isDragging = false;
+    });
+
+    async function runV7() {
+        log("exploit initiated (v0rtex_32)...", "log-v7");
+        await sleep(1200);
+        log("target: iOS 10.3.4 (14G61)");
+        await sleep(800);
+        log("bypassing KASLR...");
+        await sleep(1500);
+        log("found kernel slide: 0x" + Math.floor(Math.random()*0xFFFFFFF).toString(16));
+        await sleep(1000);
+        log("spraying thread ports...");
+        await sleep(2000);
+        log("grabbing kernel task port...", "log-ok");
+        await sleep(1200);
+        log("system remounting... (/)");
+        await sleep(1500);
+        log("preparing Cydia 1.1.30...");
+        await sleep(1800);
+        log("SUCCESS! Device is pwned.", "log-ok");
+        log("rebooting into jailbroken state...", "log-warn");
+        await sleep(2500);
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+
+</body>
+</html>
